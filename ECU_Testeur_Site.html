@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Testeur d'ECU — Projet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --blue-dark: #0f2a4a;
+    --blue-mid: #1e4d8c;
+    --blue-accent: #2563eb;
+    --blue-light: #dbeafe;
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --text: #0f172a;
+    --text-muted: #475569;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--blue-dark);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 60px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  nav .logo {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.02em;
+  }
+  nav .logo span {
+    background: var(--blue-accent);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  nav .nav-links {
+    display: flex;
+    gap: 0.5rem;
+  }
+  nav .nav-links button {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  nav .nav-links button:hover, nav .nav-links button.active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+    color: #fff;
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.06);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -60px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.04);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.9);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+  .hero h1 em {
+    color: #60a5fa;
+    font-style: normal;
+  }
+  .hero p {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.75);
+    max-width: 560px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #60a5fa;
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hero-stat .lbl {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.05em;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--blue-dark);
+    margin-bottom: 0.4rem;
+  }
+  .section-sub {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* CARDS GRID */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    box-shadow: var(--shadow);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+  .card-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .card-icon.blue { background: var(--blue-light); }
+  .card-icon.teal { background: var(--teal-light); }
+  .card-icon.amber { background: var(--amber-light); }
+  .card-icon.red { background: var(--red-light); }
+  .card-icon.green { background: var(--green-light); }
+  .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 2px; }
+  .card .card-role { font-size: 0.82rem; color: var(--text-muted); }
+  .card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* COMPONENT TABLE */
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .comp-table thead th {
+    background: var(--blue-dark);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .comp-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .comp-table tbody tr:hover { background: var(--blue-light); }
+  .comp-table tbody td { padding: 11px 16px; }
+  .comp-table .ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 5px;
+    color: var(--blue-mid);
+    white-space: nowrap;
+  }
+  .comp-table .qty {
+    text-align: center;
+    font-weight: 600;
+    color: var(--blue-dark);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+  }
+  .badge.ctrl { background: var(--blue-light); color: var(--blue-mid); }
+  .badge.signal { background: var(--teal-light); color: var(--teal); }
+  .badge.power { background: var(--amber-light); color: var(--amber); }
+  .badge.protect { background: var(--red-light); color: var(--red); }
+  .badge.hmi { background: var(--green-light); color: var(--green); }
+
+  /* SENSORS TABLE */
+  .sensor-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .sensor-card table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .sensor-card thead th { background: var(--teal); color: white; padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.04em; }
+  .sensor-card tbody tr { border-bottom: 1px solid var(--border); }
+  .sensor-card tbody tr:last-child { border: none; }
+  .sensor-card tbody td { padding: 10px 14px; }
+  .sensor-card .abbr { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--teal); }
+
+  /* TP CARDS */
+  .tp-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .tp-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+  .tp-card .tp-header {
+    background: var(--blue-dark);
+    color: white;
+    padding: 1.4rem;
+    position: relative;
+  }
+  .tp-card .tp-header .tp-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #93c5fd;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .tp-card .tp-header h3 { font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+  .tp-card .tp-body { padding: 1.2rem 1.4rem; }
+  .tp-card .tp-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+  .tp-card .tp-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+  }
+  .tp-card .tp-meta .tag {
+    background: var(--blue-light);
+    color: var(--blue-mid);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .tp-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--blue-accent);
+    color: white;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 8px;
+    transition: background 0.2s, transform 0.1s;
+    border: none;
+    cursor: pointer;
+  }
+  .tp-download:hover { background: #1d4ed8; transform: scale(1.02); }
+  .tp-download svg { width: 16px; height: 16px; }
+
+  /* ARCH DIAGRAM */
+  .arch-diagram {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .arch-blocks {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .arch-block {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1.5px solid;
+    position: relative;
+  }
+  .arch-block.main { background: var(--blue-light); color: var(--blue-dark); border-color: var(--blue-accent); }
+  .arch-block.signal { background: var(--teal-light); color: #0f766e; border-color: var(--teal); }
+  .arch-block.power { background: var(--amber-light); color: #92400e; border-color: var(--amber); }
+  .arch-block.hmi { background: var(--green-light); color: #166534; border-color: var(--green); }
+  .arch-block.protect { background: var(--red-light); color: #991b1b; border-color: var(--red); }
+  .arch-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+  }
+
+  /* QR Section */
+  .qr-section {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .qr-box { flex-shrink: 0; }
+  #qrcode canvas, #qrcode img { border-radius: 8px; }
+  .qr-info h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--blue-dark); }
+  .qr-info p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; max-width: 420px; }
+  .qr-input-wrap { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+  .qr-input-wrap input {
+    flex: 1;
+    min-width: 200px;
+    padding: 9px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    outline: none;
+  }
+  .qr-input-wrap input:focus { border-color: var(--blue-accent); }
+  .qr-input-wrap button {
+    background: var(--blue-accent);
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .qr-input-wrap button:hover { background: #1d4ed8; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.7rem; }
+    .hero-stats { gap: 1.5rem; }
+    nav .logo { font-size: 0.85rem; }
+    nav .nav-links button { padding: 5px 8px; font-size: 0.8rem; }
+    .qr-section { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <span>ECU</span>
+    Mini Testeur Universel
+  </div>
+  <div class="nav-links">
+    <button class="active" onclick="showPage('accueil', this)">Accueil</button>
+    <button onclick="showPage('composants', this)">Composants</button>
+    <button onclick="showPage('capteurs', this)">Capteurs</button>
+    <button onclick="showPage('tps', this)">TPs</button>
+    <button onclick="showPage('qrcode', this)">QR Code</button>
+  </div>
+</nav>
+
+<!-- HERO (always visible) -->
+<div class="hero">
+  <div class="hero-badge">Projet de Génie Électronique</div>
+  <h1>Mini Testeur Universel<br>d'<em>ECU Automobile</em></h1>
+  <p>Un banc de test compact à base d'Arduino pour simuler et diagnostiquer un calculateur moteur hors véhicule, à faible coût.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="num">9</span><span class="lbl">Capteurs simulés</span></div>
+    <div class="hero-stat"><span class="num">14</span><span class="lbl">Composants</span></div>
+    <div class="hero-stat"><span class="num">3</span><span class="lbl">TP pratiques</span></div>
+    <div class="hero-stat"><span class="num">5</span><span class="lbl">Blocs fonctionnels</span></div>
+  </div>
+</div>
+
+<!-- PAGE: ACCUEIL -->
+<div id="page-accueil" class="page active">
+  <div class="container">
+    <h2 class="section-title">À propos du projet</h2>
+    <p class="section-sub">Comprendre et tester un ECU automobile sans avoir besoin d'un véhicule complet.</p>
+
+    <div class="grid-2" style="margin-bottom: 2rem;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">🎯</div>
+          <div><h3>Problématique</h3><span class="card-role">Contexte du projet</span></div>
+        </div>
+        <p>Les bancs de test professionnels (Bosch KTS, Autel) coûtent très cher et ne sont pas accessibles dans tous les ateliers. Ce projet propose une alternative à faible coût basée sur Arduino pour tester un ECU hors véhicule.</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon teal">💡</div>
+          <div><h3>Notre solution</h3><span class="card-role">Mini testeur universel</span></div>
+        </div>
+        <p>Un mini testeur universel d'ECU conçu autour d'un Arduino Mega 2560, capable de simuler tous les principaux signaux d'entrée capteurs et d'observer les réponses de l'ECU via des LEDs et un afficheur LCD.</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon amber">⚙️</div>
+          <div><h3>Fonctionnement ECU</h3><span class="card-role">3 étapes clés</span></div>
+        </div>
+        <p><strong>LIRE</strong> : reçoit les signaux des capteurs (entrées). <strong>CALCULER</strong> : analyse et prend des décisions selon sa cartographie. <strong>COMMANDER</strong> : envoie des ordres aux actionneurs (sorties).</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">🔐</div>
+          <div><h3>Sécurité RFID</h3><span class="card-role">Accès contrôlé</span></div>
+        </div>
+        <p>Le système intègre un lecteur RFID MFRC522 (13.56 MHz) pour contrôler l'accès au testeur. Seule une carte ou un badge autorisé peut déverrouiller le système, évitant toute manipulation non autorisée.</p>
+      </div>
+    </div>
+
+    <h2 class="section-title">Architecture du système</h2>
+    <p class="section-sub">5 blocs fonctionnels interconnectés.</p>
+
+    <div class="arch-diagram">
+      <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em;">Blocs fonctionnels du mini testeur d'ECU</div>
+      <div class="arch-blocks">
+        <div class="arch-block main">🔧 Génération<br>signaux</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-block signal">📡 Simulation<br>sorties ECU</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-block hmi">🖥️ Interface<br>Homme-Machine</div>
+      </div>
+      <div class="arch-blocks" style="margin-top: 0.8rem;">
+        <div class="arch-block power">⚡ Alimentation<br>12V / 5V</div>
+        <div class="arch-arrow" style="opacity: 0.3;">—</div>
+        <div class="arch-block protect">🔐 Protection<br>RFID</div>
+      </div>
+      <div style="margin-top: 1rem; font-size: 0.78rem; color: var(--text-muted);">
+        Arduino Mega 2560 (principal) + Arduino Uno R3 (protection RFID)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: COMPOSANTS -->
+<div id="page-composants" class="page">
+  <div class="container">
+    <h2 class="section-title">Composants matériels</h2>
+    <p class="section-sub">Tous les composants utilisés dans la valise mini testeur d'ECU.</p>
+
+    <div style="overflow-x: auto; margin-bottom: 2rem;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Composant</th>
+            <th>Référence</th>
+            <th>Catégorie</th>
+            <th>Qté</th>
+            <th>Rôle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Microcontrôleur principal</strong></td>
+            <td><span class="ref">Arduino Mega 2560</span></td>
+            <td><span class="badge ctrl">Contrôle</span></td>
+            <td class="qty">1</td>
+            <td>Génère les signaux capteurs et pilote tout le système</td>
+          </tr>
+          <tr>
+            <td><strong>Microcontrôleur protection</strong></td>
+            <td><span class="ref">Arduino Uno R3</span></td>
+            <td><span class="badge ctrl">Contrôle</span></td>
+            <td class="qty">1</td>
+            <td>Gère le module RFID et le verrouillage d'accès</td>
+          </tr>
+          <tr>
+            <td><strong>Convertisseur N/A (DAC)</strong></td>
+            <td><span class="ref">Réseau R-2R 10kΩ/20kΩ</span></td>
+            <td><span class="badge signal">Signal</span></td>
+            <td class="qty">1</td>
+            <td>Convertit les signaux numériques Arduino en tension analogique</td>
+          </tr>
+          <tr>
+            <td><strong>Amplificateur opérationnel</strong></td>
+            <td><span class="ref">LM358</span></td>
+            <td><span class="badge signal">Signal</span></td>
+            <td class="qty">1</td>
+            <td>Amplifie et met en forme les signaux analogiques vers l'ECU</td>
+          </tr>
+          <tr>
+            <td><strong>Afficheur / Clavier</strong></td>
+            <td><span class="ref">Keypad Shield LCD 16×2</span></td>
+            <td><span class="badge hmi">IHM</span></td>
+            <td class="qty">1</td>
+            <td>Interface de navigation et affichage des valeurs simulées</td>
+          </tr>
+          <tr>
+            <td><strong>Module relais</strong></td>
+            <td><span class="ref">4 canaux 12V</span></td>
+            <td><span class="badge signal">Signal</span></td>
+            <td class="qty">1</td>
+            <td>Simule les sorties de puissance ECU (injection, allumage…)</td>
+          </tr>
+          <tr>
+            <td><strong>Module RFID</strong></td>
+            <td><span class="ref">MFRC522 13.56 MHz</span></td>
+            <td><span class="badge protect">Protection</span></td>
+            <td class="qty">1</td>
+            <td>Authentification par badge — verrouille/déverrouille le testeur</td>
+          </tr>
+          <tr>
+            <td><strong>Extenseur I/O</strong></td>
+            <td><span class="ref">MCP23017</span></td>
+            <td><span class="badge ctrl">Contrôle</span></td>
+            <td class="qty">1</td>
+            <td>Étend les entrées/sorties I²C de l'Arduino Uno</td>
+          </tr>
+          <tr>
+            <td><strong>Buffer tri-state</strong></td>
+            <td><span class="ref">CD4503BE</span></td>
+            <td><span class="badge signal">Signal</span></td>
+            <td class="qty">1</td>
+            <td>Isolation logique entre circuits pour protéger l'ECU</td>
+          </tr>
+          <tr>
+            <td><strong>Alimentation principale</strong></td>
+            <td><span class="ref">12V 30A</span></td>
+            <td><span class="badge power">Alimentation</span></td>
+            <td class="qty">1</td>
+            <td>Alimente le testeur et simule la tension batterie vehicle</td>
+          </tr>
+          <tr>
+            <td><strong>Régulateur de tension</strong></td>
+            <td><span class="ref">LM2596 +5V</span></td>
+            <td><span class="badge power">Alimentation</span></td>
+            <td class="qty">1</td>
+            <td>Fournit le +5V régulé pour les Arduino et circuits logiques</td>
+          </tr>
+          <tr>
+            <td><strong>Potentiomètres</strong></td>
+            <td><span class="ref">5kΩ</span></td>
+            <td><span class="badge hmi">IHM</span></td>
+            <td class="qty">5</td>
+            <td>Réglage manuel des valeurs simulées (TPS, APP, O2…)</td>
+          </tr>
+          <tr>
+            <td><strong>LEDs de visualisation</strong></td>
+            <td><span class="ref">5mm Rouge / Vert</span></td>
+            <td><span class="badge hmi">IHM</span></td>
+            <td class="qty">+</td>
+            <td>Indiquent l'état des sorties ECU et l'accès RFID</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title">Description par bloc</h2>
+    <p class="section-sub">Rôle détaillé de chaque bloc fonctionnel.</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon blue">🔧</div>
+          <div><h3>Bloc génération signaux</h3></div>
+        </div>
+        <p>L'Arduino Mega 2560 génère les signaux numériques. Le DAC R-2R les convertit en tensions analogiques. Un filtre RC passe-bas lisse la sortie PWM. Le LM358 amplifie avant envoi à l'ECU.</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon teal">📡</div>
+          <div><h3>Bloc simulation sorties ECU</h3></div>
+        </div>
+        <p>Le module relais 4 canaux simule les actionneurs de l'ECU (injecteurs, allumage, EGR, vanne). Des LEDs vertes/rouges indiquent visuellement l'état de chaque sortie simulée.</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon green">🖥️</div>
+          <div><h3>Interface Homme-Machine</h3></div>
+        </div>
+        <p>Le Keypad Shield LCD 16×2 affiche le menu de navigation et les valeurs en temps réel. Les 6 boutons permettent de sélectionner le capteur à simuler et d'ajuster les paramètres.</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon amber">⚡</div>
+          <div><h3>Bloc alimentation</h3></div>
+        </div>
+        <p>Une alimentation 12V/30A simule la tension batterie. Le régulateur LM2596 fournit le +5V pour les circuits logiques. Des résistances limitent le courant dans les LEDs indicatrices.</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon red">🔐</div>
+          <div><h3>Bloc protection RFID</h3></div>
+        </div>
+        <p>L'Arduino Uno pilote le MFRC522 via SPI. Le MCP23017 étend les I/O pour gérer l'authentification. En cas de badge non autorisé, la LED rouge s'allume et le système reste verrouillé.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: CAPTEURS -->
+<div id="page-capteurs" class="page">
+  <div class="container">
+    <h2 class="section-title">Capteurs simulés</h2>
+    <p class="section-sub">Le mini testeur simule 9 signaux capteurs principaux du calculateur moteur.</p>
+
+    <div class="sensor-card" style="margin-bottom: 2rem;">
+      <table>
+        <thead>
+          <tr>
+            <th>Capteur</th>
+            <th>Abréviation</th>
+            <th>Type signal</th>
+            <th>Rôle dans l'ECU</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Capteur position vilebrequin</td>
+            <td><span class="abbr">CKP</span></td>
+            <td>Impulsions numériques (60-2 dents)</td>
+            <td>Détermine le régime moteur et la position des pistons</td>
+          </tr>
+          <tr>
+            <td>Capteur arbre à cames</td>
+            <td><span class="abbr">CMP</span></td>
+            <td>Signal numérique</td>
+            <td>Synchronise l'injection séquentielle et l'allumage</td>
+          </tr>
+          <tr>
+            <td>Débitmètre d'air</td>
+            <td><span class="abbr">MAF</span></td>
+            <td>Analogique 0–5V</td>
+            <td>Mesure la quantité d'air entrant dans le moteur</td>
+          </tr>
+          <tr>
+            <td>Capteur pression d'admission</td>
+            <td><span class="abbr">MAP</span></td>
+            <td>Analogique 0.5–4.5V</td>
+            <td>Indique la charge du moteur (pression collecteur)</td>
+          </tr>
+          <tr>
+            <td>Capteur position papillon</td>
+            <td><span class="abbr">TPS</span></td>
+            <td>Analogique 0.5–4.5V</td>
+            <td>Traduit la demande d'accélération du conducteur</td>
+          </tr>
+          <tr>
+            <td>Sonde lambda (oxygène)</td>
+            <td><span class="abbr">O2</span></td>
+            <td>Analogique 0–1V</td>
+            <td>Mesure la richesse du mélange air/carburant (λ)</td>
+          </tr>
+          <tr>
+            <td>Capteur pédale accélérateur</td>
+            <td><span class="abbr">APP</span></td>
+            <td>Analogique 0.5–4.5V</td>
+            <td>Détecte la position de la pédale d'accélération</td>
+          </tr>
+          <tr>
+            <td>Capteur temp. liquide refroid.</td>
+            <td><span class="abbr">CTS</span></td>
+            <td>NTC (résistance variable)</td>
+            <td>Mesure la température du liquide de refroidissement</td>
+          </tr>
+          <tr>
+            <td>Capteur temp. air admission</td>
+            <td><span class="abbr">IAT</span></td>
+            <td>NTC (résistance variable)</td>
+            <td>Mesure la température de l'air entrant</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title">Actionneurs commandés par l'ECU</h2>
+    <p class="section-sub">Les sorties que le mini testeur observe et simule via relais et LEDs.</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header"><div class="card-icon teal">💉</div><div><h3>Injecteurs</h3></div></div>
+        <p>Commandés en injection séquentielle selon le cycle moteur. Le relais canal 1 simule la commande injecteur.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon amber">⚡</div><div><h3>Bobines d'allumage</h3></div></div>
+        <p>Commandées selon l'avance à l'allumage calculée à partir des signaux CKP, CMP et TPS.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon blue">🔄</div><div><h3>Vanne EGR</h3></div></div>
+        <p>Recyclage des gaz d'échappement pour réduire les émissions polluantes. Commandée selon la charge moteur.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon green">🌀</div><div><h3>Vanne papillon</h3></div></div>
+        <p>Contrôle le débit d'air selon la demande de puissance. Commandée via signal PWM de l'ECU.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon red">🌡️</div><div><h3>Électrovanne ralenti</h3></div></div>
+        <p>Régule le régime de ralenti en ouvrant ou fermant un by-pass d'air autour du papillon.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon amber">💨</div><div><h3>Ventilateur radiateur</h3></div></div>
+        <p>Commandé en fonction de la température moteur (signal CTS) pour maintenir la thermique.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: TPs -->
+<div id="page-tps" class="page">
+  <div class="container">
+    <h2 class="section-title">Travaux Pratiques</h2>
+    <p class="section-sub">3 séances de TP progressives — télécharger chaque TP en PDF.</p>
+
+    <div class="grid-3">
+      <div class="tp-card">
+        <div class="tp-header">
+          <div class="tp-num">TP 01</div>
+          <h3>Introduction à l'ECU et Architecture du Mini Testeur</h3>
+        </div>
+        <div class="tp-body">
+          <p class="tp-desc">Comprendre le rôle d'un ECU automobile, identifier ses capteurs et actionneurs, et prendre en main le mini testeur via l'authentification RFID.</p>
+          <div class="tp-meta">
+            <span class="tag">QCM (4 questions)</span>
+            <span class="tag">Réflexion</span>
+            <span class="tag">Manipulation</span>
+          </div>
+          <a class="tp-download" href="TP1_Mini_Testeur_ECU.pdf" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger TP1 PDF
+          </a>
+        </div>
+      </div>
+
+      <div class="tp-card">
+        <div class="tp-header">
+          <div class="tp-num">TP 02</div>
+          <h3>Simulation des Signaux Capteurs</h3>
+        </div>
+        <div class="tp-body">
+          <p class="tp-desc">Étude du DAC R-2R, du filtre RC passe-bas et de l'AOP LM358. Simulation des capteurs CKP, MAP, TPS, O2, MAF et APP. Observation sur oscilloscope.</p>
+          <div class="tp-meta">
+            <span class="tag">QCM (4 questions)</span>
+            <span class="tag">Oscilloscope</span>
+            <span class="tag">DAC R-2R</span>
+          </div>
+          <a class="tp-download" href="TP2_Mini_Testeur_ECU.pdf" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger TP2 PDF
+          </a>
+        </div>
+      </div>
+
+      <div class="tp-card">
+        <div class="tp-header">
+          <div class="tp-num">TP 03</div>
+          <h3>Diagnostic des Sorties ECU et Protocole OBD-II</h3>
+        </div>
+        <div class="tp-body">
+          <p class="tp-desc">Analyse des sorties ECU via relais et LEDs. Introduction au protocole OBD-II, lecture et effacement des codes défauts (DTC), diagnostic complet.</p>
+          <div class="tp-meta">
+            <span class="tag">QCM (10 questions)</span>
+            <span class="tag">OBD-II</span>
+            <span class="tag">DTC</span>
+          </div>
+          <a class="tp-download" href="TP3_Mini_Testeur_ECU.pdf" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Télécharger TP3 PDF
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem; background: #f0f9ff; border-color: #bae6fd;">
+      <p style="font-size: 0.88rem; color: #0369a1;">
+        <strong>Note :</strong> Les fichiers PDF des TP sont générés et placés dans le même dossier que ce site HTML. Héberger tous les fichiers ensemble sur le même serveur ou partager le dossier complet pour que les téléchargements fonctionnent correctement.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: QR CODE -->
+<div id="page-qrcode" class="page">
+  <div class="container">
+    <h2 class="section-title">Générateur QR Code</h2>
+    <p class="section-sub">Générer un QR code pointant vers ce site ou vers une URL personnalisée.</p>
+
+    <div class="qr-section">
+      <div class="qr-box">
+        <div id="qrcode"></div>
+      </div>
+      <div class="qr-info">
+        <h3>QR Code du site Mini Testeur ECU</h3>
+        <p>Scanner ce QR code pour accéder directement au site de présentation du projet. Changer l'URL ci-dessous si le site est hébergé en ligne.</p>
+        <div class="qr-input-wrap">
+          <input type="text" id="qr-url" value="https://votre-site.com/mini-testeur-ecu" placeholder="URL du site...">
+          <button onclick="updateQR()">Générer</button>
+        </div>
+        <p style="margin-top: 0.8rem; font-size: 0.8rem; color: var(--text-muted);">
+          Imprimer et coller ce QR code sur la valise du mini testeur pour un accès rapide à la documentation.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: 1.5rem;">
+      <div class="card">
+        <div class="card-header"><div class="card-icon blue">📱</div><div><h3>Comment utiliser le QR code</h3></div></div>
+        <p>Scanner avec l'appareil photo de votre smartphone — aucune application nécessaire. L'étudiant accède instantanément à la fiche machine, les composants et les TPs téléchargeables.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon teal">🌐</div><div><h3>Hébergement recommandé</h3></div></div>
+        <p>Héberger ce site avec les PDFs sur GitHub Pages, Netlify ou un serveur interne. Mettre à jour l'URL dans le QR code après déploiement pour un accès permanent.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Mini Testeur Universel d'ECU Automobile — Projet Génie Électronique &nbsp;|&nbsp; Généré avec Claude
+</footer>
+
+<script>
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+var qrInstance = null;
+
+function updateQR() {
+  var url = document.getElementById('qr-url').value.trim() || 'https://votre-site.com/mini-testeur-ecu';
+  var container = document.getElementById('qrcode');
+  container.innerHTML = '';
+  qrInstance = new QRCode(container, {
+    text: url,
+    width: 180,
+    height: 180,
+    colorDark: '#0f2a4a',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  updateQR();
+});
+</script>
+</body>
+</html>
